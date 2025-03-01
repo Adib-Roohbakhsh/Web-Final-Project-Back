@@ -36,7 +36,6 @@ const sql = postgres({
   },
 });
 
-//Products request
 //Get all products & Searech by name & brand
 app.get("/products", async (req, res) => {
   try {
@@ -136,7 +135,34 @@ app.patch("/products/:id", async (req, res) => {
   }
 });
 
-//User request
+// app.patch("/products/:id", async (req, res) => {
+//   try {
+//     const productId = req.params.id;
+//     const { amount: newAmount } = req.body;
+//     if (typeof newAmount !== 'number' || newAmount <= 0) {
+//       return res.status(400).json({ error: "New amount must be a positive number" });
+//     }
+//     const [product] = await sql`
+//       SELECT amount FROM products WHERE id = ${productId}
+//     `;
+//     if (!product) {
+//       return res.status(404).json({ error: "Product not found" });
+//     }
+//     if (product.amount <= 0) {
+//       return res.status(400).json({ error: "Cannot update - current amount is invalid" });
+//     }
+//     // Update the amount
+//     const query =
+//        await sql`UPDATE products SET amount = ${amount} WHERE id = ${productId}`;
+
+//     res.status(200).json(query);
+//   } catch (error) {
+//     console.error("Error updating product:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
+
+
 //Get user
 app.get("/users/:id", async (req, res) => {
   try {
