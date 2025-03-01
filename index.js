@@ -148,57 +148,57 @@ app.get("/users/:id", async (req, res) => {
   }
 });
 
-//Login
-app.post("/users", async (req, res) => {
+// Login 
+app.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
     const enPass = sha256(password);
-    const validUser =
-      await sql`SELECT * FROM users WHERE username = ${username} AND password = ${enPass} `;
-    if (validUser && validUser.length > 0) {
-      res.send({
+    const validUser = await sql`SELECT * FROM users WHERE username = ${username} AND password = ${enPass}`;
+    
+    if (validUser?.length > 0) {
+      res.json({
         user: {
           id: validUser[0].id,
           username: validUser[0].username,
           is_admin: validUser[0].is_admin,
         },
       });
-    } else if (!(username === username) && !(password === password)) {
-      res.status(401).json({ message: "Wrong username and/or password" });
-    }
-    else if (username.length > 0 && password.length > 0) {
-      const newUser = await sql`INSERT INTO users (username, password, is_admin) VALUES (${username}, ${enPass}, false) RETURNING *`;
-      res.status(201).json({ message: 'User created successfully', user: { error: newUser[0].username, password: newUser[0].password } });
-      console.log("new", newUser);
+    } else {
+      res.status(401).json({ message: "Invalid credentials" });
     }
   } catch (error) {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-//sing up
-// app.post("/users/:id", async (req, res) => {
-//   try {
-//     const userId = req.params.id;
-//     const { username, password } = req.body;
-//     const enPass = sha256(password);
-//     const validUser = await sql`SELECT * FROM users WHERE id = ${userId}`;
-//     if (!validUser) {
-//       const newUser =
-//         await sql`INSERT INTO users (username, password, is_admin) VALUES (${username}, ${enPass}, false) RETURNING *`;
-//       res
-//         .status(201)
-//         .json({
-//           message: "User created successfully",
-//           user: { error: newUser[0].username, password: newUser[0].password },
-//         });
-//       console.log("new", newUser);
-//     } else {
-//       res.status(500).json({ message: "user already dose exist" });
-//     }
-//   } catch (error) {
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// });
+
+// Signup 
+app.post("/users", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const enPass = sha256(password);
+
+    const existingUser = await sql`SELECT * FROM users WHERE username = ${username}`;
+    if (existingUser?.length > 0) {
+      return res.status(400).json({ message: "Username already exists" });
+    }
+
+    const newUser = await sql`
+      INSERT INTO users (username, password, is_admin)
+      VALUES (${username}, ${enPass}, false)
+      RETURNING *
+    `;
+
+    res.status(201).json({
+      user: {
+        id: newUser[0].id,
+        username: newUser[0].username,
+        is_admin: newUser[0].is_admin,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 //sales
 app.post("/sales", async (req, res) => {
